@@ -5,7 +5,7 @@ import { transition } from 'd3-transition';
 import { easeCubicInOut } from 'd3-ease';
 import { line, curveBasis } from 'd3-shape';
 import { scaleBand, scaleLinear, scalePoint } from 'd3-scale';
-import { least, max, min, range, rollup } from 'd3-array';
+import { group, least, max, min, range, rollup } from 'd3-array';
 import { C, F, MIX, N, MEASURES, NAMES, DATA, YEARS, SURVEYS, rnd, gone, small, clinic } from './story.js';
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -121,6 +121,31 @@ export function createGarden(el, { onPick, onCard, onTag }) {
     [1985, 1995, 2005, 2015, 2025].forEach((yr) => g.append('text').attr('class', 'ax').attr('text-anchor', yr === 1985 ? 'start' : yr === 2025 ? 'end' : 'middle').attr('x', x(yr) + x.bandwidth() / 2).attr('y', H - m.b + 18).text(yr));
   };
 
+  // One tab stop for a whole chart of flowers: arrow keys move a ring, Enter or Space opens the card.
+  function keyFlowers(g, pts, { label, cur, say, rest, open }) {
+    const cols = [...group(pts, (d) => d.col).entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v.sort((a, b) => a.k - b.k));
+    const ring = g.append('circle').attr('r', 9).attr('fill', 'none').attr('stroke', '#1c1e21').attr('stroke-width', 2).style('display', 'none').style('pointer-events', 'none');
+    let at = pts.find((d) => d.name === cur) || cols[0][0];
+    const show = (d) => { at = d; ring.style('display', null).attr('transform', `translate(${d.X},${d.Y})`); onTag(say(d)); };
+    const colOf = (d) => cols.findIndex((c) => c[0].col === d.col);
+    const step = {
+      ArrowRight: () => { const c = cols[Math.min(cols.length - 1, colOf(at) + 1)]; return c[Math.min(at.k, c.length - 1)]; },
+      ArrowLeft: () => { const c = cols[Math.max(0, colOf(at) - 1)]; return c[Math.min(at.k, c.length - 1)]; },
+      ArrowUp: () => cols[colOf(at)][Math.min(at.k + 1, cols[colOf(at)].length - 1)],
+      ArrowDown: () => cols[colOf(at)][Math.max(at.k - 1, 0)],
+      Home: () => cols[0][0],
+      End: () => cols[cols.length - 1][0],
+    };
+    g.attr('class', 'keys').attr('tabindex', 0).attr('role', 'application').attr('aria-label', label)
+      .on('focus', () => { if (g.node().matches(':focus-visible')) show(at); })
+      .on('blur', () => { ring.style('display', 'none'); onTag(rest); })
+      .on('keydown', (e) => {
+        if (step[e.key]) { e.preventDefault(); show(step[e.key]()); }
+        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(at); }
+      });
+    return { set: (d) => { at = d; } };
+  }
+
   // Each flower is one survey, and each can be opened.
   function counts(cur) {
     clear();
@@ -129,16 +154,23 @@ export function createGarden(el, { onPick, onCard, onTag }) {
     const x = scaleBand(YEARS.map((d) => d[0]), [m.l, W - m.r]).padding(.08);
     const u = (H - m.t - m.b) / 15.5, hs = Math.min(x.bandwidth() * 1.15, u * 1.1) / 21;
     const g = extra.append('g'), seen = {};
-    const pts = SURVEYS.map(([yr, name]) => { const k = seen[yr] = (seen[yr] ?? -1) + 1; return { yr, k, name, X: x(yr) + x.bandwidth() / 2, Y: H - m.b - (k + .5) * u }; });
+    const pts = SURVEYS.map(([yr, name]) => { const k = seen[yr] = (seen[yr] ?? -1) + 1; return { yr, col: yr, k, name, X: x(yr) + x.bandwidth() / 2, Y: H - m.b - (k + .5) * u }; });
     const shade = (p, on) => (p.name === on ? C.rose : p.yr >= 2020 ? C.slate : MIX[(p.yr + p.k) % MIX.length]);
     g.selectAll('line.s').data(YEARS).join('line').attr('class', 'stem').attr('x1', (d) => x(d[0]) + x.bandwidth() / 2).attr('x2', (d) => x(d[0]) + x.bandwidth() / 2).attr('y1', H - m.b).attr('y2', (d) => H - m.b - (d[1] - .5) * u);
     const marks = g.selectAll('use').data(pts).join('use').attr('href', '#bloomP').attr('fill', (d) => shade(d, cur)).attr('transform', (d) => `translate(${d.X},${d.Y}) scale(${hs})`);
     yearAxis(g, x, m);
+    const open = (d) => {
+      marks.attr('fill', (p) => shade(p, d.name));
+      onCard({ name: d.name, lens: 'five', note: `Survey of ${d.yr}. Its other surveys are pink.` });
+    };
+    const keys = keyFlowers(g, pts, {
+      label: 'All 322 surveys by year. Use the arrow keys to move between surveys, and Enter to open one.', cur,
+      say: (d) => ({ place: d.name, sub: `survey of ${d.yr}` }), rest: { place: W < 520 ? '' : '322 surveys', sub: W < 520 ? '' : '1985 to 2025' }, open,
+    });
     clickFn = (px, py) => {
       const d = least(pts, (p) => (p.X - px) ** 2 + (p.Y - py) ** 2);
       if (Math.hypot(d.X - px, d.Y - py) > 30) return;
-      marks.attr('fill', (p) => shade(p, d.name));
-      onCard({ name: d.name, lens: 'five', note: `Survey of ${d.yr}. Its other surveys are pink.` });
+      keys.set(d); open(d);
     };
   }
 
@@ -150,7 +182,7 @@ export function createGarden(el, { onPick, onCard, onTag }) {
     const P = NAMES.map((name) => ({ name, last: DATA[name].last })).sort((a, b) => a.last - b.last || a.name.localeCompare(b.name));
     const x = scaleBand(range(1985, 2026), [m.l, W - m.r]).padding(.08), seen = {};
     const u = Math.min((H - m.t - m.b) / max(rollup(P, (v) => v.length, (d) => d.last).values()), 26);
-    P.forEach((d) => { d.k = seen[d.last] = (seen[d.last] ?? -1) + 1; d.X = x(d.last) + x.bandwidth() / 2; d.Y = H - m.b - (d.k + .5) * u; });
+    P.forEach((d) => { d.col = d.last; d.k = seen[d.last] = (seen[d.last] ?? -1) + 1; d.X = x(d.last) + x.bandwidth() / 2; d.Y = H - m.b - (d.k + .5) * u; });
     const g = extra.append('g'), hs = Math.min(x.bandwidth() * 1.6, u) / 21;
     const shade = (p, on) => (p.name === on ? C.rose : p.last < 2015 ? C.sand : C.sage);
     const marks = g.selectAll('use').data(P).join('use').attr('href', '#bloomP').attr('fill', (d) => shade(d, cur)).attr('transform', (d) => `translate(${d.X},${d.Y}) scale(${hs})`);
@@ -158,11 +190,18 @@ export function createGarden(el, { onPick, onCard, onTag }) {
     const sx = x(2015) - 1;
     g.append('line').attr('x1', sx).attr('x2', sx).attr('y1', H - m.b).attr('y2', m.t).attr('stroke', '#d8d8d3').attr('stroke-dasharray', '3 4');
     g.append('text').attr('class', 'note').attr('x', sx - 8).attr('y', H - m.b - 7 * u).attr('text-anchor', 'end').text('39 countries');
+    const open = (d) => {
+      marks.attr('fill', (p) => shade(p, d.name));
+      onCard({ name: d.name, lens: 'five', note: `Last survey ${d.last}.` });
+    };
+    const keys = keyFlowers(g, P, {
+      label: 'All 87 countries by the year of their last survey. Use the arrow keys to move between countries, and Enter to open one.', cur,
+      say: (d) => ({ place: d.name, sub: `last survey ${d.last}` }), rest: { place: W < 520 ? '' : '87 countries', sub: W < 520 ? '' : 'by last survey' }, open,
+    });
     clickFn = (px, py) => {
       const d = least(P, (p) => (p.X - px) ** 2 + (p.Y - py) ** 2);
       if (Math.hypot(d.X - px, d.Y - py) > 30) return;
-      marks.attr('fill', (p) => shade(p, d.name));
-      onCard({ name: d.name, lens: 'five', note: `Last survey ${d.last}.` });
+      keys.set(d); open(d);
     };
   }
 

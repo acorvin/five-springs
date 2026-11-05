@@ -91,3 +91,4 @@ select { max-width: 100%; height: 38px; padding: 0 8px; border: 1px solid var(--
 .small:empty { display: none; }
 .mark text { pointer-events: none; }
 svg.pickable { cursor: pointer; }
+.keys { outline: none; }

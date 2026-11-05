@@ -84,7 +84,7 @@
 
 <div class="book">
   <div class="stage" bind:this={stage}>
-    <svg class="main" bind:this={svgEl} role="img" aria-label="A garden of 1,000 flowers that changes with the story"></svg>
+    <svg class="main" bind:this={svgEl} role="group" aria-label="A garden of 1,000 flowers that changes with the story"></svg>
     <div class="tag" aria-live="polite">
       {#if tag.count != null}<b>{tag.count.toLocaleString('en-US')}</b>{#if tag.label}{tag.label}<br />{/if}{/if}
       {#if tag.sub}{tag.place}<br />{tag.sub}{/if}
@@ -172,14 +172,14 @@
     <section class="step"><div class="inner">
       <p class="big">We know all of this because someone went from door to door and counted.</p>
       <p class="small">Each flower here is one of the 322 surveys. There were about ten a year in the 2010s, and about four a year since 2020.</p>
-      <p class="hint">Choose a flower to see where it was</p>
+      <p class="hint">Choose a flower to see where it was, or press Tab and use the arrow keys</p>
     </div></section>
 
     <section class="step"><div class="inner">
       <p class="big">In 39 of 87 countries, no one has come with this survey since before 2015.</p>
       <p class="small">{t.t13}</p>
       <p class="big">{t.t13b}</p>
-      <p class="hint">Each flower is a country, placed at its last survey</p>
+      <p class="hint">Each flower is a country, placed at its last survey. Choose one, or press Tab and use the arrow keys</p>
     </div></section>
   </div>
 </div>
