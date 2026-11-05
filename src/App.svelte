@@ -192,7 +192,7 @@
     <li>Your seed's fate is drawn from the same rates. The surveys report these measures separately, so which flowers are small, and which began in a clinic, is assigned independently. Nothing here says that one causes another.</li>
     <li>All 322 standard DHS surveys from 87 countries are here. The program works mostly in low- and middle-income countries, so many countries were never part of it. One survey, Albania 2017, has no under-five figure, so it can be seen in Albania's card but not walked into as a garden.</li>
     <li>The plants use only countries with two surveys at least 10 years apart, which gives 54 for survival, 48 for stunting and 52 for clinic births. The story itself compares the earliest and latest surveys with every measure, and says how far apart they are.</li>
-    <li>"No survey" means no completed standard DHS survey in the program's listing in November 2026. Many countries also have other surveys, so a quiet garden here does not mean nothing is known about it.</li>
+    <li>"No survey" means no completed standard DHS survey in the program's listing in November 2026. Many countries also have other surveys, so a gap here does not mean nothing is known about that country.</li>
     <li>This is independent work with public data, not affiliated with or endorsed by the DHS Program, ICF or USAID.</li>
   </ul>
   <p class="src">Data: <a href="https://api.dhsprogram.com/">DHS Program API</a>, retrieved November 2026. The full analysis: <a href="https://alexcorvin.io/work/child-health-by-country">Child Health, Country by Country</a>.</p>
