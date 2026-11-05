@@ -1,0 +1,31 @@
+{
+  "name": "five-springs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A picture-book data story about the children who get to turn five, built from every standard DHS survey in 87 countries.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "d3-array": "^3.2.4",
+    "d3-ease": "^3.0.1",
+    "d3-random": "^3.0.1",
+    "d3-scale": "^4.0.2",
+    "d3-selection": "^3.0.0",
+    "d3-shape": "^3.2.0",
+    "d3-transition": "^3.0.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "svelte": "^5.57.2",
+    "vite": "^8.3.4"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}
