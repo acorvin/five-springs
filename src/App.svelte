@@ -195,5 +195,5 @@
     <li>"No survey" means no completed standard DHS survey in the program's listing in November 2026. Many countries also have other surveys, so a gap here does not mean nothing is known about that country.</li>
     <li>This is independent work with public data, not affiliated with or endorsed by the DHS Program, ICF or USAID.</li>
   </ul>
-  <p class="src">Data: <a href="https://api.dhsprogram.com/">DHS Program API</a>, retrieved November 2026. The full analysis: <a href="https://alexcorvin.io/work/child-health-by-country">Child Health, Country by Country</a>.</p>
+  <p class="src">Data: <a href="https://api.dhsprogram.com/">DHS Program API</a>, retrieved November 2026. The full analysis: <a href="https://github.com/acorvin/dhs-health-indicator-change">Child Health, Country by Country</a>.</p>
 </div>
